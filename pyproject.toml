@@ -1,0 +1,19 @@
+[project]
+name = "pycppad"
+version = "1.2.2"
+description = "Python bindings for CppAD and CppADCodeGen using Boost.Python"
+readme = "README.md"
+license= "BSD-3-Clause"
+dependencies = ["cmeel-cppad", "eigenpy"]
+
+[project.urls]
+homepage = "https://github.com/simple-robotics/pycppad"
+
+[build-system]
+requires = [
+    "cmeel[build]",
+    "cmeel-cppad",
+    "cmeel-eigen",
+    "eigenpy",
+    ]
+build-backend = "cmeel.build"
