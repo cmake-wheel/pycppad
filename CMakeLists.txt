@@ -37,6 +37,7 @@ CHECK_MINIMAL_CXX_STANDARD(11 ENFORCE)
 OPTION(SUFFIX_SO_VERSION "Suffix library name with its version" ON)
 OPTION(BUILD_WITH_CPPAD_CODEGEN_BINDINGS "Build the python bindings for code generation (via CppADCodeGen)" OFF)
 
+set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
 FINDPYTHON()
 
 SET_BOOST_DEFAULT_OPTIONS()
