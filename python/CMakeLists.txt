@@ -3,55 +3,56 @@
 #
 
 # --- LIBRARY --- #
-SET(PYWRAP ${PROJECT_NAME}_pywrap)
-SET(PYWRAP ${PYWRAP} PARENT_SCOPE)
+set(PYWRAP ${PROJECT_NAME}_pywrap)
+set(PYWRAP
+    ${PYWRAP}
+    PARENT_SCOPE)
 
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/python/${PROJECT_NAME}")
+make_directory("${${PROJECT_NAME}_BINARY_DIR}/python/${PROJECT_NAME}")
 
-ADD_CUSTOM_TARGET(python)
-SET_TARGET_PROPERTIES(python PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True)
+add_custom_target(python)
+set_target_properties(python PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True)
 
-ADD_LIBRARY(${PYWRAP} SHARED main.cpp)
-ADD_DEPENDENCIES(python ${PYWRAP})
-TARGET_LINK_LIBRARIES(${PYWRAP} PUBLIC ${PROJECT_NAME})
-TARGET_LINK_BOOST_PYTHON(${PYWRAP} PUBLIC)
-# BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS spews conversion warnings from int to long unsigned int.
-# Unfortunately, using literals does not work in a macro. As such, this turns them off for the entire wrapper:
-IF(NOT WIN32)
-  TARGET_COMPILE_OPTIONS(${PYWRAP} PRIVATE "-Wno-conversion")
-ENDIF()
-IF(IS_ABSOLUTE ${PYTHON_SITELIB})
-  SET(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
-ELSE()
-  SET(${PYWRAP}_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${PYTHON_SITELIB}/${PROJECT_NAME})
-ENDIF()
-IF(WIN32)
-  TARGET_COMPILE_DEFINITIONS(${PYWRAP} PRIVATE -DNOMINMAX)
-  TARGET_LINK_LIBRARIES(${PYWRAP} PUBLIC ${PYTHON_LIBRARY})
-ENDIF(WIN32)
+add_library(${PYWRAP} SHARED main.cpp)
+add_dependencies(python ${PYWRAP})
+target_link_libraries(${PYWRAP} PUBLIC ${PROJECT_NAME})
+target_link_boost_python(${PYWRAP} PUBLIC)
+# BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS spews conversion warnings from int to
+# long unsigned int. Unfortunately, using literals does not work in a macro. As
+# such, this turns them off for the entire wrapper:
+if(NOT WIN32)
+  target_compile_options(${PYWRAP} PRIVATE "-Wno-conversion")
+endif()
+if(IS_ABSOLUTE ${PYTHON_SITELIB})
+  set(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
+else()
+  set(${PYWRAP}_INSTALL_DIR
+      ${CMAKE_INSTALL_PREFIX}/${PYTHON_SITELIB}/${PROJECT_NAME})
+endif()
+if(WIN32)
+  target_compile_definitions(${PYWRAP} PRIVATE -DNOMINMAX)
+  target_link_libraries(${PYWRAP} PUBLIC ${PYTHON_LIBRARY})
+endif(WIN32)
 
-SET_TARGET_PROPERTIES(${PYWRAP}
-  PROPERTIES
-  PREFIX ""
-  SUFFIX ${PYTHON_EXT_SUFFIX}
-  OUTPUT_NAME "${PYWRAP}"
-  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/python/${PROJECT_NAME}"
-  )
+set_target_properties(
+  ${PYWRAP}
+  PROPERTIES PREFIX ""
+             SUFFIX ${PYTHON_EXT_SUFFIX}
+             OUTPUT_NAME "${PYWRAP}"
+             LIBRARY_OUTPUT_DIRECTORY
+             "${CMAKE_BINARY_DIR}/python/${PROJECT_NAME}")
 
-IF(UNIX AND NOT APPLE)
-  SET_TARGET_PROPERTIES(${PYWRAP} PROPERTIES INSTALL_RPATH "\$ORIGIN/../../..")
-ENDIF()
+if(UNIX AND NOT APPLE)
+  set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH "\$ORIGIN/../../..")
+endif()
 
-INSTALL(TARGETS ${PYWRAP} DESTINATION ${${PYWRAP}_INSTALL_DIR})
+install(TARGETS ${PYWRAP} DESTINATION ${${PYWRAP}_INSTALL_DIR})
 
 # --- INSTALL SCRIPTS
-SET(PYTHON_FILES
-  __init__.py
-  )
+set(PYTHON_FILES __init__.py)
 
-FOREACH(python ${PYTHON_FILES})
-  PYTHON_BUILD(${PROJECT_NAME} ${python})
-  INSTALL(FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/pycppad/${python}"
-    DESTINATION ${${PYWRAP}_INSTALL_DIR})
-ENDFOREACH(python)
+foreach(python ${PYTHON_FILES})
+  python_build(${PROJECT_NAME} ${python})
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/pycppad/${python}"
+          DESTINATION ${${PYWRAP}_INSTALL_DIR})
+endforeach(python)

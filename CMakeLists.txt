@@ -2,143 +2,147 @@
 # Copyright (c) 2021-2022 INRIA
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1)
 
-SET(PROJECT_NAME pycppad)
-SET(PROJECT_DESCRIPTION "Python bindings for CppAD and CppADCodeGen using Boost.Python")
-SET(PROJECT_URL "https://github.com/simple-robotics/pycppad")
-SET(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
-SET(PROJECT_USE_CMAKE_EXPORT TRUE)
-
+set(PROJECT_NAME pycppad)
+set(PROJECT_DESCRIPTION
+    "Python bindings for CppAD and CppADCodeGen using Boost.Python")
+set(PROJECT_URL "https://github.com/simple-robotics/pycppad")
+set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
+set(PROJECT_USE_CMAKE_EXPORT TRUE)
 
 # Project configuration
-SET(PROJECT_USE_CMAKE_EXPORT TRUE)
-SET(CMAKE_VERBOSE_MAKEFILE TRUE)
-SET(CXX_DISABLE_WERROR TRUE)
+set(PROJECT_USE_CMAKE_EXPORT TRUE)
+set(CMAKE_VERBOSE_MAKEFILE TRUE)
+set(CXX_DISABLE_WERROR TRUE)
 
 # Check if the submodule cmake have been initialized
-IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
-  MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
-ENDIF()
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+  message(
+    FATAL_ERROR
+      "\nPlease run the following command first:\ngit submodule update --init\n"
+  )
+endif()
 
-INCLUDE(cmake/base.cmake)
-INCLUDE(cmake/boost.cmake)
-INCLUDE(cmake/python.cmake)
-INCLUDE(cmake/ide.cmake)
+include(cmake/base.cmake)
+include(cmake/boost.cmake)
+include(cmake/python.cmake)
+include(cmake/ide.cmake)
 
-SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/find-external/CppAD/" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/find-external/CppAD/"
+                      ${CMAKE_MODULE_PATH})
 
 # Project definition
-COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
-PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
-CHECK_MINIMAL_CXX_STANDARD(11 ENFORCE)
+compute_project_args(PROJECT_ARGS LANGUAGES CXX)
+project(${PROJECT_NAME} ${PROJECT_ARGS})
+check_minimal_cxx_standard(11 ENFORCE)
 
 # Project options
-OPTION(SUFFIX_SO_VERSION "Suffix library name with its version" ON)
-OPTION(BUILD_WITH_CPPAD_CODEGEN_BINDINGS "Build the python bindings for code generation (via CppADCodeGen)" OFF)
+option(SUFFIX_SO_VERSION "Suffix library name with its version" ON)
+option(BUILD_WITH_CPPAD_CODEGEN_BINDINGS
+       "Build the python bindings for code generation (via CppADCodeGen)" OFF)
 
-FINDPYTHON()
+findpython()
 
-SET_BOOST_DEFAULT_OPTIONS()
-ADD_PROJECT_DEPENDENCY(Boost REQUIRED)
-SEARCH_FOR_BOOST_PYTHON(REQUIRED)
-EXPORT_BOOST_DEFAULT_OPTIONS()
+set_boost_default_options()
+add_project_dependency(Boost REQUIRED)
+search_for_boost_python(REQUIRED)
+export_boost_default_options()
 
-IF(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
-  ADD_PROJECT_DEPENDENCY(cppadcg 2.4.1 REQUIRED PKG_CONFIG_REQUIRES "cppadcg >= 2.4.1") # CppADCodeGen 2.4.1 is the first version to check the minimal version of CppAD
-  ADD_DEFINITIONS(-DPYCPPAD_WITH_CPPAD_CODEGEN_BINDINGS)
-ENDIF(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
+if(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
+  add_project_dependency(
+    cppadcg 2.4.1 REQUIRED PKG_CONFIG_REQUIRES "cppadcg >= 2.4.1"
+  )# CppADCodeGen 2.4.1 is the first version to check the minimal version of
+   # CppAD
+  add_definitions(-DPYCPPAD_WITH_CPPAD_CODEGEN_BINDINGS)
+endif(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
 
-ADD_PROJECT_DEPENDENCY(cppad 20180000.0 REQUIRED PKG_CONFIG_REQUIRES "cppad >= 20180000.0")
-ADD_PROJECT_DEPENDENCY(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
-ADD_PROJECT_DEPENDENCY(eigenpy 2.7.6 REQUIRED)
+add_project_dependency(cppad 20180000.0 REQUIRED PKG_CONFIG_REQUIRES
+                       "cppad >= 20180000.0")
+add_project_dependency(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
+add_project_dependency(eigenpy 2.7.6 REQUIRED)
 
-SET(${PROJECT_NAME}_HEADERS
-  include/${PROJECT_NAME}/fwd.hpp
-  include/${PROJECT_NAME}/ad.hpp
-  include/${PROJECT_NAME}/independent.hpp
-  include/${PROJECT_NAME}/ad_fun.hpp
-  include/${PROJECT_NAME}/cast.hpp
-  include/${PROJECT_NAME}/cppad.hpp
-  include/${PROJECT_NAME}/cppad-scalar.hpp
-  include/${PROJECT_NAME}/utils/scope.hpp
+set(${PROJECT_NAME}_HEADERS
+    include/${PROJECT_NAME}/fwd.hpp
+    include/${PROJECT_NAME}/ad.hpp
+    include/${PROJECT_NAME}/independent.hpp
+    include/${PROJECT_NAME}/ad_fun.hpp
+    include/${PROJECT_NAME}/cast.hpp
+    include/${PROJECT_NAME}/cppad.hpp
+    include/${PROJECT_NAME}/cppad-scalar.hpp
+    include/${PROJECT_NAME}/utils/scope.hpp
+    # Generated headers
+    ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/config.hpp
+    ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/deprecated.hpp
+    ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/warning.hpp)
 
-  # Generated headers
-  ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/config.hpp
-  ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/deprecated.hpp
-  ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/warning.hpp
-  )
+set(${PROJECT_NAME}_SOURCES src/cppad.cpp)
 
-SET(${PROJECT_NAME}_SOURCES
-  src/cppad.cpp
-  )
-
-IF(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
-  LIST(APPEND ${PROJECT_NAME}_HEADERS
+if(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
+  list(
+    APPEND
+    ${PROJECT_NAME}_HEADERS
     include/${PROJECT_NAME}/codegen/cg.hpp
     include/${PROJECT_NAME}/codegen/cppadcg-scalar.hpp
     include/${PROJECT_NAME}/codegen/code-handler.hpp
     include/${PROJECT_NAME}/codegen/lang/c/language-c.hpp
-    include/${PROJECT_NAME}/codegen/lang/c/lang-c-default-var-name-gen.hpp
-    )
-ENDIF(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
+    include/${PROJECT_NAME}/codegen/lang/c/lang-c-default-var-name-gen.hpp)
+endif(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
 
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
+add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES}
+                                   ${${PROJECT_NAME}_HEADERS})
 
-IF(SUFFIX_SO_VERSION)
-  SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
-ENDIF(SUFFIX_SO_VERSION)
+if(SUFFIX_SO_VERSION)
+  set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
+endif(SUFFIX_SO_VERSION)
 
-TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME} PUBLIC)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${cppad_LIBRARY} eigenpy::eigenpy)
-IF(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
-  TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
-    SYSTEM PUBLIC
-    ${cppadcg_INCLUDE_DIR}
-  )
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${CMAKE_DL_LIBS})
-ENDIF(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
+target_link_boost_python(${PROJECT_NAME} PUBLIC)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${cppad_LIBRARY} eigenpy::eigenpy)
+if(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
+  target_include_directories(${PROJECT_NAME} SYSTEM
+                             PUBLIC ${cppadcg_INCLUDE_DIR})
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${CMAKE_DL_LIBS})
+endif(BUILD_WITH_CPPAD_CODEGEN_BINDINGS)
 
-IF(MSVC)
-  TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PUBLIC "/bigobj")
-ENDIF()
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PUBLIC "/bigobj")
+endif()
 
-# Do not report:
-#  -Wconversion as the BOOST_PYTHON_FUNCTION_OVERLOADS implicitly converts.
-#  -Wcomment as latex equations have multi-line comments.
-IF(NOT WIN32)
-  TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wno-conversion -Wno-comment)
-ENDIF(NOT WIN32)
-IF(WIN32)
-  TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE -DNOMINMAX)
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${PYTHON_LIBRARY})
-ENDIF(WIN32)
+# Do not report: -Wconversion as the BOOST_PYTHON_FUNCTION_OVERLOADS implicitly
+# converts. -Wcomment as latex equations have multi-line comments.
+if(NOT WIN32)
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wno-conversion -Wno-comment)
+endif(NOT WIN32)
+if(WIN32)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE -DNOMINMAX)
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${PYTHON_LIBRARY})
+endif(WIN32)
 
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
-  SYSTEM PUBLIC
-  ${Boost_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
-  ${PYTHON_INCLUDE_DIRS}
-  $<INSTALL_INTERFACE:include>)
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(
+  ${PROJECT_NAME} SYSTEM
+  PUBLIC ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS}
+         $<INSTALL_INTERFACE:include>)
+target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 
-INSTALL(TARGETS ${PROJECT_NAME}
+install(
+  TARGETS ${PROJECT_NAME}
   EXPORT ${TARGETS_EXPORT_NAME}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
-  INCLUDES DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
+  INCLUDES
+  DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
 
-ADD_HEADER_GROUP(${PROJECT_NAME}_HEADERS)
-ADD_SOURCE_GROUP(${PROJECT_NAME}_SOURCES)
+add_header_group(${PROJECT_NAME}_HEADERS)
+add_source_group(${PROJECT_NAME}_SOURCES)
 
-ADD_SUBDIRECTORY(python)
-ADD_SUBDIRECTORY(example)
+add_subdirectory(python)
+add_subdirectory(example)
 
-PKG_CONFIG_APPEND_LIBS(${PROJECT_NAME})
-PKG_CONFIG_APPEND_CFLAGS("-I${PYTHON_INCLUDE_DIRS}")
-PKG_CONFIG_APPEND_BOOST_LIBS(${BOOST_COMPONENTS})
+pkg_config_append_libs(${PROJECT_NAME})
+pkg_config_append_cflags("-I${PYTHON_INCLUDE_DIRS}")
+pkg_config_append_boost_libs(${BOOST_COMPONENTS})
 
 # Install catkin package.xml
-INSTALL(FILES package.xml DESTINATION share/${PROJECT_NAME})
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
